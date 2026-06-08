@@ -71,7 +71,28 @@ const loginUser = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    const user = await User.findOne({ email });
+    let user = await User.findOne({ email });
+
+    // Auto-create demo user if it doesn't exist in the database
+    if (!user && email === 'demo@tradeforge.com') {
+      user = await User.create({
+        name: 'Demo User',
+        email: 'demo@tradeforge.com',
+        password: 'password',
+        virtualFunds: 1000000
+      });
+      
+      // Also seed some initial holdings for the demo
+      const Holding = require('../models/Holding.model');
+      await Holding.create([
+        { symbol: 'RELIANCE.NS', quantity: 50, avgBuyPrice: 2800.00, userId: user._id },
+        { symbol: 'TCS.NS', quantity: 20, avgBuyPrice: 3800.00, userId: user._id },
+        { symbol: 'HDFCBANK.NS', quantity: 150, avgBuyPrice: 1550.00, userId: user._id }
+      ]);
+      
+      user.virtualFunds = 1000000 - (50*2800) - (20*3800) - (150*1550);
+      await user.save();
+    }
 
     if (user && (await user.matchPassword(password))) {
       const accessToken = generateToken(user._id);
