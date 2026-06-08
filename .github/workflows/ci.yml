@@ -27,12 +27,12 @@ jobs:
     # Backend Setup
     - name: Install Server Dependencies
       working-directory: ./server
-      run: npm ci
+      run: npm install
 
     # Frontend Setup
     - name: Install Client Dependencies
       working-directory: ./client
-      run: npm ci
+      run: npm install
 
     - name: Build Frontend
       working-directory: ./client
